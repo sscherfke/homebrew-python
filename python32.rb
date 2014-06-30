@@ -1,10 +1,5 @@
 require 'formula'
 
-# Python3 is the new language standard, not just a new revision.
-# It's somewhat incompatible to Python 2.x, therefore, the executable
-# "python" will always point to the 2.x version which you can get by
-# `brew install python`.
-
 class TkCheck < Requirement
   def message; <<-EOS.undent
     Tk.framework was detected in /Library/Frameworks
@@ -37,18 +32,21 @@ class Python32 < Formula
   option 'quicktest', 'Run `make quicktest` after the build'
   option 'with-brewed-openssl', "Use Homebrew's openSSL instead of the one from OS X"
 
+  skip_clean "bin/pip3", "bin/pip-#{VER}"
+  skip_clean "bin/easy_install3", "bin/easy_install-#{VER}"
+
   resource 'setuptools' do
-    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-2.2.tar.gz'
-    sha1 '547eff11ea46613e8a9ba5b12a89c1010ecc4e51'
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.6.tar.gz'
+    sha1 '745cbb942f8015dbcbfd9df5cb815adb63c7b0e9'
   end
 
   resource 'pip' do
-    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.4.tar.gz'
-    sha1 '35ccb7430356186cf253615b70f8ee580610f734'
+    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz'
+    sha1 'e6cd9e6f2fd8d28c9976313632ef8aa8ac31249e'
   end
 
   def site_packages_cellar
-    prefix/"Frameworks/Python.framework/Versions/#{VER}/lib/python#{VER}/site-packages"
+    prefix/"lib/python#{VER}/site-packages"
   end
 
   # The HOMEBREW_PREFIX location of site-packages.
@@ -62,7 +60,7 @@ class Python32 < Formula
   end
 
   def effective_lib
-    prefix/"Frameworks/Python.framework/Versions/#{VER}/lib"
+    prefix/"lib"
   end
 
   def install
@@ -79,7 +77,6 @@ class Python32 < Formula
              --enable-ipv6
              --datarootdir=#{share}
              --datadir=#{share}
-             --enable-framework=#{prefix}/Frameworks
            ]
 
     args << '--without-gcc' if ENV.compiler == :clang
@@ -110,7 +107,6 @@ class Python32 < Formula
     system "make", "install", "PYTHONAPPSDIR=#{prefix}"
     # Demos and Tools
     (HOMEBREW_PREFIX/"share/python#{VER}").mkpath
-    system "make", "frameworkinstallextras", "PYTHONAPPSDIR=#{share}/python#{VER}"
     system "make", "quicktest" if build.include? "quicktest"
 
     # Any .app get a " 3" attached, so it does not conflict with python 2.x.
@@ -140,20 +136,20 @@ class Python32 < Formula
     scripts_folder.mkpath
     setup_args = ["-s", "setup.py", "install", "--force", "--verbose", "--install-lib=#{site_packages_cellar}", "--install-scripts=#{bin}" ]
 
-    resource('setuptools').stage { system "#{bin}/python", *setup_args }
+    resource('setuptools').stage { system "#{bin}/python3", *setup_args }
     rm bin/'easy_install'
-    resource('pip').stage { system "#{bin}/python", *setup_args }
+    resource('pip').stage { system "#{bin}/python3", *setup_args }
     rm bin/'pip'
 
     # Tell distutils-based installers where to put scripts
-    (prefix/"Frameworks/Python.framework/Versions/#{VER}/lib/python#{VER}/distutils/distutils.cfg").write <<-EOF.undent
+    (prefix/"lib/python#{VER}/distutils/distutils.cfg").write <<-EOF.undent
       [install]
       install-scripts=#{scripts_folder}
       install-lib=#{site_packages}
     EOF
 
     unless MacOS::CLT.installed?
-      makefile = prefix/"Frameworks/Python.framework/Versions/#{VER}/lib/python#{VER}/config-#{VER}m/Makefile"
+      makefile = prefix/"lib/python#{VER}/config-#{VER}m/Makefile"
       inreplace makefile do |s|
         s.gsub!(/^CC=.*$/, "CC=xcrun clang")
         s.gsub!(/^CXX=.*$/, "CXX=xcrun clang++")
@@ -244,9 +240,6 @@ class Python32 < Formula
 
   def caveats
     text = <<-EOS.undent
-      Homebrew's Python3 framework
-        #{prefix}/Frameworks/Python.framework
-
       Setuptools and Pip have been installed. To update them
         pip-#{VER} install --upgrade setuptools
         pip-#{VER} install --upgrade pip
