@@ -1,22 +1,17 @@
 Python versions for homebrew
 ============================
 
-Insane copy of homebrew's original Python version packages. Provides formulas
-for Python 2.4, 2.5, 2.6, 3.1 and 3.2.
+Insane copy of homebrew's original Python version packages.  Provides formulas
+for Python 3.2, 3.3 and 3.5(beta).  Python 2.7 and 3.4 will be added once they
+are removed from the official Homebrew formula.
 
-To use them, run brew tap ctheune/homebrew-python; brew update.
+To use them, run brew tap sscherfke/homebrew-python; brew update.
 
-When you install additional Python 2 or 3 versions, you'll get errors in the
-*link* step (because each version claims to be *the* python(3)). To workaround
-this, execute the link command with the `--overwrite` option and repeat it
-for python(3) so that `python`/`python3` point to the newest versions, e.g, for
-Python 2.6:
+When you install additional Python versions, you may get errors in the *link*
+step (because each version claims to be *the* python3).  To workaround this,
+execute the link command with the `--overwrite` option and repeat it for
+python3 so that `python3` point to the newest versions, e.g:
 
-```bash
-brew link --overwrite python26
-brew link --overwrite python
-```
-or for Python 3.3:
 ```bash
 brew link --overwrite python33
 brew link --overwrite python3
