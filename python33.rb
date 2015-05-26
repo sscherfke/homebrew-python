@@ -1,12 +1,12 @@
 require 'formula'
 
 class Python33 < Formula
-  homepage 'http://www.python.org/'
-  url 'http://python.org/ftp/python/3.3.5/Python-3.3.5.tar.xz'
-  sha1 '6683b26dd2cfd23af852abfcf1aedf25bbd44839'
+  homepage 'https://www.python.org/'
+  url 'https://www.python.org/ftp/python/3.3.6/Python-3.3.6.tar.xz'
+  sha256 '5226e4bf7a530c3ff2bcde0c94e0e09e59a8bcde0114fe0268bc925bdabb5d3f'
   VER='3.3'  # The <major>.<minor> is used so often.
 
-  head 'http://hg.python.org/cpython', :using => :hg, :branch => VER
+  head 'https://hg.python.org/cpython', :using => :hg, :branch => VER
 
   option :universal
   option 'quicktest', 'Run `make quicktest` after the build'
@@ -22,17 +22,17 @@ class Python33 < Formula
   depends_on 'homebrew/dupes/tcl-tk' if build.with? 'brewed-tk'
   depends_on :x11 if build.with? 'brewed-tk' and Tab.for_name('tcl-tk').used_options.include?('with-x11')
 
-  skip_clean "bin/pip3", "bin/pip-#{VER}"
-  skip_clean "bin/easy_install3", "bin/easy_install-#{VER}"
+  skip_clean "bin/pip-#{VER}"
+  skip_clean "bin/easy_install-#{VER}"
 
   resource 'setuptools' do
-    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.6.tar.gz'
-    sha1 '745cbb942f8015dbcbfd9df5cb815adb63c7b0e9'
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-16.0.tar.gz'
+    sha256 'aa86255dee2c4a0056509750008007667c29306b7a6c13801468515b2c672845'
   end
 
   resource 'pip' do
-    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz'
-    sha1 'e6cd9e6f2fd8d28c9976313632ef8aa8ac31249e'
+    url 'https://pypi.python.org/packages/source/p/pip/pip-7.0.1.tar.gz'
+    sha256 'cfec177552fdd0b2d12b72651c8e874f955b4c62c1c2c9f2588cbdc1c0d0d416'
   end
 
   # resource 'get-pip' do
@@ -153,11 +153,18 @@ class Python33 < Formula
     setup_args = [ "-s", "setup.py", "install", "--force", "--verbose",
                    "--install-scripts=#{bin}", "--install-lib=#{site_packages}" ]
 
-    resource('setuptools').stage { system "#{bin}/python3", *setup_args }
-    mv bin/'easy_install', bin/'easy_install3'
+    resource('setuptools').stage { system "#{bin}/python#{VER}", *setup_args }
+    rm_rf [bin/'easy_install', bin/'easy_install3']
 
-    resource('pip').stage { system "#{bin}/python3", *setup_args }
-    mv bin/'pip', bin/'pip3'
+    resource('pip').stage { system "#{bin}/python#{VER}", *setup_args }
+    rm_rf [bin/'pip', bin/"pip3"]
+
+    # Remove 2to3 because python2 also installs it
+    # Also remove binaries with "3" prefix to avoid conflicts with the official
+    # python3 formula
+    rm_rf [bin/"2to3", bin/"idle3", bin/"pydoc3", bin/"python3",
+           bin/"python3-config", bin/"pyvenv"]
+    rm_rf share/man/man1/"python3.1"
 
     # resource('get-pip').stage { system "#{bin}/python3.3", "get-pip.py",
     #                             "--root=#{prefix}" }
