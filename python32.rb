@@ -16,9 +16,9 @@ class TkCheck < Requirement
 end
 
 class Python32 < Formula
-  homepage 'http://www.python.org/'
-  url 'http://python.org/ftp/python/3.2.5/Python-3.2.5.tar.bz2'
-  sha1 '6bd2714704995bc84fc9b8e3019205bf75d44969'
+  homepage 'https://www.python.org/'
+  url 'https://www.python.org/ftp/python/3.2.6/Python-3.2.6.tar.xz'
+  sha256 '1d12b501819fd26afafbf8459be1aa279b56f032b4c15412de0a713ce0de7bdc'
   VER='3.2'  # The <major>.<minor> is used so often.
 
   depends_on TkCheck
@@ -32,17 +32,17 @@ class Python32 < Formula
   option 'quicktest', 'Run `make quicktest` after the build'
   option 'with-brewed-openssl', "Use Homebrew's openSSL instead of the one from OS X"
 
-  skip_clean "bin/pip3", "bin/pip-#{VER}"
-  skip_clean "bin/easy_install3", "bin/easy_install-#{VER}"
+  skip_clean "bin/pip-#{VER}"
+  skip_clean "bin/easy_install-#{VER}"
 
   resource 'setuptools' do
-    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-3.6.tar.gz'
-    sha1 '745cbb942f8015dbcbfd9df5cb815adb63c7b0e9'
+    url 'https://pypi.python.org/packages/source/s/setuptools/setuptools-16.0.tar.gz'
+    sha256 'aa86255dee2c4a0056509750008007667c29306b7a6c13801468515b2c672845'
   end
 
   resource 'pip' do
-    url 'https://pypi.python.org/packages/source/p/pip/pip-1.5.6.tar.gz'
-    sha1 'e6cd9e6f2fd8d28c9976313632ef8aa8ac31249e'
+    url 'https://pypi.python.org/packages/source/p/pip/pip-7.0.1.tar.gz'
+    sha256 'cfec177552fdd0b2d12b72651c8e874f955b4c62c1c2c9f2588cbdc1c0d0d416'
   end
 
   def site_packages_cellar
@@ -137,9 +137,16 @@ class Python32 < Formula
     setup_args = ["-s", "setup.py", "install", "--force", "--verbose", "--install-lib=#{site_packages_cellar}", "--install-scripts=#{bin}" ]
 
     resource('setuptools').stage { system "#{bin}/python3", *setup_args }
-    rm bin/'easy_install'
+    rm_rf bin/'easy_install'
     resource('pip').stage { system "#{bin}/python3", *setup_args }
-    rm bin/'pip'
+    rm_rf [bin/'pip', bin/"pip3"]
+
+    # Remove 2to3 because python2 also installs it
+    # Also remove binaries with "3" prefix to avoid conflicts with the official
+    # python3 formula
+    rm_rf [bin/"2to3", bin/"idle3", bin/"pydoc3", bin/"python3",
+           bin/"python3-config", bin/"pyvenv"]
+    rm_rf share/man/man1/"python3.1"
 
     # Tell distutils-based installers where to put scripts
     (prefix/"lib/python#{VER}/distutils/distutils.cfg").write <<-EOF.undent
