@@ -1,7 +1,7 @@
 class Python35 < Formula
   homepage "https://www.python.org/"
-  url "https://www.python.org/ftp/python/3.5.0/Python-3.5.0b1.tar.xz"
-  sha256 "4c1b075cacf9b511cadb10b494fc892f5079785bcbbd7e75930e52db099b0694"
+  url "https://www.python.org/ftp/python/3.5.0/Python-3.5.0b2.tar.xz"
+  sha256 "8bbbe3e574773971a74b2ae11c9712c0b6e6c3287ab63763a3e3e868511b0953"
   VER="3.5"
 
   head "https://hg.python.org/cpython", :using => :hg
