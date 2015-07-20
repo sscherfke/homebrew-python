@@ -1,9 +1,9 @@
-class Python32 < Formula
+class Python34 < Formula
   desc "Interpreted, interactive, object-oriented programming language"
   homepage "https://www.python.org/"
-  url 'https://www.python.org/ftp/python/3.2.6/Python-3.2.6.tar.xz'
-  sha256 '1d12b501819fd26afafbf8459be1aa279b56f032b4c15412de0a713ce0de7bdc'
-  VER='3.2'  # The <major>.<minor> is used so often.
+  url "https://www.python.org/ftp/python/3.4.3/Python-3.4.3.tar.xz"
+  sha256 "b5b3963533768d5fc325a4d7a6bd6f666726002d696f1d399ec06b043ea996b8"
+  VER='3.4'  # The <major>.<minor> is used so often.
 
   option :universal
   option "with-tcl-tk", "Use Homebrew's Tk instead of OS X Tk (has optional Cocoa and threads support)"
