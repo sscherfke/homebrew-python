@@ -1,8 +1,8 @@
 class Python34 < Formula
   desc "Interpreted, interactive, object-oriented programming language"
   homepage "https://www.python.org/"
-  url "https://www.python.org/ftp/python/3.4.4/Python-3.4.4.tar.xz"
-  sha256 "a797d3820155ec6cb654a652b9acfb11792d4e7d568eef1f9199009e042b6ba2"
+  url "https://www.python.org/ftp/python/3.4.5/Python-3.4.5.tar.xz"
+  sha256 "ee64b1c8a47461009abf25252332d29a4e587cb4f0c1c96aa793a3732e9d898a"
   VER='3.4'  # The <major>.<minor> is used so often.
 
   option :universal
