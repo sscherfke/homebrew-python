@@ -4,8 +4,8 @@ class Python36 < Formula
   revision 0
 
   stable do
-    url "https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tar.xz"
-    sha256 "b0c5f904f685e32d9232f7bdcbece9819a892929063b6e385414ad2dd6a23622"
+    url "https://www.python.org/ftp/python/3.6.1/Python-3.6.1.tar.xz"
+    sha256 "a01810ddfcec216bcdb357a84bfaafdfaa0ca42bbdaa4cb7ff74f5a9961e4041"
     VER="3.6"
   end
 
