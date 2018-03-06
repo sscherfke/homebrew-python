@@ -1,10 +1,12 @@
-class Python33 < Formula
+class Python37 < Formula
   desc "Interpreted, interactive, object-oriented programming language"
   homepage "https://www.python.org/"
 
-  url "https://www.python.org/ftp/python/3.3.7/Python-3.3.7.tar.xz"
-  sha256 "85f60c327501c36bc18c33370c14d472801e6af2f901dafbba056f61685429fe"
-  VER="3.3"
+  stable do
+    url "https://www.python.org/ftp/python/3.7.0/Python-3.7.0b2.tar.xz"
+    sha256 "92082de7fafdcdab61a91b908f32b35f13a7aef3c2671c0fa388eb574c3fc882"
+    VER="3.7"
+  end
 
   option "with-tcl-tk", "Use Homebrew's Tk instead of macOS Tk (has optional Cocoa and threads support)"
   option "with-quicktest", "Run `make quicktest` after the build"
@@ -77,7 +79,9 @@ class Python33 < Formula
       "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
       "do_readline = '#{Formula["readline"].opt_lib}/libhistory.dylib'"
 
-    inreplace "setup.py", "/usr/local/ssl", Formula["openssl"].opt_prefix
+    # inreplace "setup.py", "/usr/local/ssl", Formula["openssl"].opt_prefix
+    args << "OPENSSL_INCLUDES=-I#{Formula["openssl"].opt_prefix}"
+    args << "OPENSSL_libdirs=-L#{Formula["openssl"].opt_prefix}"
 
     if build.with? "sqlite"
       inreplace "setup.py" do |s|
@@ -257,3 +261,53 @@ class Python33 < Formula
     system "#{bin}/python#{VER}", "-c", "import _gdbm"
   end
 end
+
+__END__
+diff --git a/setup.py b/setup.py
+index 2779658..902d0eb 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1699,9 +1699,6 @@ class PyBuildExt(build_ext):
+         # Rather than complicate the code below, detecting and building
+         # AquaTk is a separate method. Only one Tkinter will be built on
+         # Darwin - either AquaTk, if it is found, or X11 based Tk.
+-        if (host_platform == 'darwin' and
+-            self.detect_tkinter_darwin(inc_dirs, lib_dirs)):
+-            return
+
+         # Assume we haven't found any of the libraries or include files
+         # The versions with dots are used on Unix, and the versions without
+@@ -1747,22 +1744,6 @@ class PyBuildExt(build_ext):
+             if dir not in include_dirs:
+                 include_dirs.append(dir)
+
+-        # Check for various platform-specific directories
+-        if host_platform == 'sunos5':
+-            include_dirs.append('/usr/openwin/include')
+-            added_lib_dirs.append('/usr/openwin/lib')
+-        elif os.path.exists('/usr/X11R6/include'):
+-            include_dirs.append('/usr/X11R6/include')
+-            added_lib_dirs.append('/usr/X11R6/lib64')
+-            added_lib_dirs.append('/usr/X11R6/lib')
+-        elif os.path.exists('/usr/X11R5/include'):
+-            include_dirs.append('/usr/X11R5/include')
+-            added_lib_dirs.append('/usr/X11R5/lib')
+-        else:
+-            # Assume default location for X11
+-            include_dirs.append('/usr/X11/include')
+-            added_lib_dirs.append('/usr/X11/lib')
+-
+         # If Cygwin, then verify that X is installed before proceeding
+         if host_platform == 'cygwin':
+             x11_inc = find_file('X11/Xlib.h', [], include_dirs)
+@@ -1786,10 +1767,6 @@ class PyBuildExt(build_ext):
+         if host_platform in ['aix3', 'aix4']:
+             libs.append('ld')
+
+-        # Finally, link with the X11 libraries (not appropriate on cygwin)
+-        if host_platform != "cygwin":
+-            libs.append('X11')
+-
+         ext = Extension('_tkinter', ['_tkinter.c', 'tkappinit.c'],
+                         define_macros=[('WITH_APPINIT', 1)] + defs,
+                         include_dirs = include_dirs,

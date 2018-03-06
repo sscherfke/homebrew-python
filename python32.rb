@@ -33,8 +33,6 @@ class Python32 < Formula
   patch :DATA if build.with? "tcl-tk"
 
   def install
-    ENV.permit_weak_imports
-
     # Unset these so that installing pip and setuptools puts them where we want
     # and not into some other Python the user has installed.
     ENV["PYTHONHOME"] = nil
@@ -73,13 +71,13 @@ class Python32 < Formula
     # Avoid linking to libgcc https://mail.python.org/pipermail/python-dev/2012-February/116205.html
     args << "MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
 
-    # We want our readline and openssl! This is just to outsmart the detection code,
+    # We want our readline! This is just to outsmart the detection code,
     # superenv makes cc always find includes/libs!
-    inreplace "setup.py" do |s|
-      s.gsub! "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
-              "do_readline = '#{Formula["readline"].opt_lib}/libhistory.dylib'"
-      s.gsub! "/usr/local/ssl", Formula["openssl"].opt_prefix
-    end
+    inreplace "setup.py",
+      "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
+      "do_readline = '#{Formula["readline"].opt_lib}/libhistory.dylib'"
+
+    inreplace "setup.py", "/usr/local/ssl", Formula["openssl"].opt_prefix
 
     if build.with? "sqlite"
       inreplace "setup.py" do |s|
@@ -115,13 +113,8 @@ class Python32 < Formula
     end
 
     ENV.deparallelize do
-      # Tell Python not to install into /Applications (default for framework builds)
-      system "make", "install", "PYTHONAPPSDIR=#{prefix}"
-      system "make", "frameworkinstallextras", "PYTHONAPPSDIR=#{pkgshare}"
+      system "make", "altinstall", "PYTHONAPPSDIR=#{prefix}"
     end
-
-    # Any .app get a " 3" attached, so it does not conflict with python 2.x.
-    Dir.glob("#{prefix}/*.app") { |app| mv app, app.sub(/\.app$/, " 3.app") }
 
     # Prevent third-party packages from building against fragile Cellar paths
     inreplace Dir[lib_cellar/"**/_sysconfigdata_m_darwin_darwin.py",
@@ -134,26 +127,22 @@ class Python32 < Formula
               /^LINKFORSHARED=(.*)PYTHONFRAMEWORKDIR(.*)/,
               "LINKFORSHARED=\\1PYTHONFRAMEWORKINSTALLDIR\\2"
 
-    # A fix, because python and python3 both want to install Python.framework
-    # and therefore we can't link both into HOMEBREW_PREFIX/Frameworks
-    # https://github.com/Homebrew/homebrew/issues/15943
-    ["Headers", "Python", "Resources"].each { |f| rm(prefix/"Frameworks/Python.framework/#{f}") }
-    rm prefix/"Frameworks/Python.framework/Versions/Current"
+    # Don't link Framework to avoid conflicts with the official python formula
+    ["Headers", "Python", "Resources"].each {
+        |f| rm_rf prefix/"Frameworks/Python.framework #{f}"
+    }
+    rm_rf prefix/"Frameworks/Python.framework/Versions/Current"
+
+    # Fix for https://github.com/Homebrew/homebrew-core/issues/21212
+    inreplace Dir[lib_cellar/"**/_sysconfigdata_m_darwin_darwin.py"],
+              %r{('LINKFORSHARED': .*?)'(Python.framework/Versions/3.\d+/Python)'}m,
+              "\\1'#{opt_prefix}/Frameworks/\\2'"
 
     # Symlink the pkgconfig files into HOMEBREW_PREFIX so they're accessible.
     (lib/"pkgconfig").install_symlink Dir["#{frameworks}/Python.framework/Versions/#{VER}/lib/pkgconfig/*"]
 
-    # Remove 2to3 because python2 also installs it
-    # Also remove binaries with "3" prefix to avoid conflicts with the official
-    # python3 formula
-    rm_rf [bin/"2to3", bin/"idle3", bin/"pydoc3", bin/"python3",
-           bin/"python3-config", bin/"pyvenv"]
-    rm_rf lib/"pkgconfig/python3.pc"
-    rm_rf share/man/man1/"python3.1"
-
     # Remove the site-packages that Python created in its Cellar.
     (prefix/"Frameworks/Python.framework/Versions/#{VER}/lib/python#{VER}/site-packages").rmtree
-
 
     if build.with? "sphinx-doc"
       cd "Doc" do
@@ -199,21 +188,21 @@ class Python32 < Formula
 
     cfg = prefix/"Frameworks/Python.framework/Versions/#{VER}/lib/python#{VER}/distutils/distutils.cfg"
 
-    cfg.atomic_write <<-EOF.undent
+    cfg.atomic_write <<~EOS
       [install]
       prefix=#{HOMEBREW_PREFIX}
 
       [build_ext]
       include_dirs=#{include_dirs.join ":"}
       library_dirs=#{library_dirs.join ":"}
-    EOF
+    EOS
   end
 
   def sitecustomize
-    <<-EOF.undent
+    <<~EOS
       # This file is created by Homebrew and is executed on each python startup.
       # Don't print from here, or else python command line scripts may fail!
-      # <https://docs.brew.sh/Homebrew-and-Python.html>
+      # <https://docs.brew.sh/Homebrew-and-Python>
       import re
       import os
       import sys
@@ -244,12 +233,12 @@ class Python32 < Formula
 
           # Set the sys.executable to use the opt_prefix
           sys.executable = '#{opt_bin}/python#{VER}'
-    EOF
+    EOS
   end
 
   def caveats
     # Tk warning only for 10.6
-    tk_caveats = <<-EOS.undent
+    tk_caveats = <<~EOS
 
       Apple's Tcl/Tk is not recommended for use with Python on Mac OS X 10.6.
       For more information see: https://www.python.org/download/mac/tcltk/
@@ -265,5 +254,6 @@ class Python32 < Formula
     system "#{bin}/python#{VER}", "-c", "import sqlite3"
     # Check if some other modules import. Then the linked libs are working.
     system "#{bin}/python#{VER}", "-c", "import tkinter; root = tkinter.Tk()"
+    system "#{bin}/python#{VER}", "-c", "import _gdbm"
   end
 end
