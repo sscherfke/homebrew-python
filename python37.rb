@@ -3,8 +3,8 @@ class Python37 < Formula
   homepage "https://www.python.org/"
 
   stable do
-    url "https://www.python.org/ftp/python/3.7.0/Python-3.7.0b2.tar.xz"
-    sha256 "92082de7fafdcdab61a91b908f32b35f13a7aef3c2671c0fa388eb574c3fc882"
+    url "https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tar.xz"
+    sha256 "0382996d1ee6aafe59763426cf0139ffebe36984474d0ec4126dd1c40a8b3549"
     VER="3.7"
   end
 

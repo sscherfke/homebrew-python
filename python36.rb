@@ -3,8 +3,8 @@ class Python36 < Formula
   homepage "https://www.python.org/"
 
   stable do
-    url "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tar.xz"
-    sha256 "159b932bf56aeaa76fd66e7420522d8c8853d486b8567c459b84fe2ed13bcaba"
+    url "https://www.python.org/ftp/python/3.6.5/Python-3.6.5.tar.xz"
+    sha256 "f434053ba1b5c8a5cc597e966ead3c5143012af827fd3f0697d21450bb8d87a6"
     VER="3.6"
   end
 
