@@ -23,6 +23,7 @@ class Python37 < Formula
   depends_on "xz" => :recommended # for the lzma module added in 3.3
   depends_on "tcl-tk" => :optional
   depends_on "sphinx-doc" => [:build, :optional]
+  conflicts_with "python", :because => "both formulas provide Python #{VER}"
 
   fails_with :clang do
     build 425
