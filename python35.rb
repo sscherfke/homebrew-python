@@ -3,8 +3,8 @@ class Python35 < Formula
   homepage "https://www.python.org/"
 
   stable do
-    url "https://www.python.org/ftp/python/3.5.5/Python-3.5.5.tar.xz"
-    sha256 "063d2c3b0402d6191b90731e0f735c64830e7522348aeb7ed382a83165d45009"
+    url "https://www.python.org/ftp/python/3.5.6/Python-3.5.6.tar.xz"
+    sha256 "f55cde04f521f273c7cba08912921cc5642cfc15ca7b22d5829f0aff4371155f"
     VER="3.5"
   end
 
